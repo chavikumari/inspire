@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>World of Inspire</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-15px); }
+      100% { transform: translateY(0px); }
+    }
+    .floating { animation: float 4s ease-in-out infinite; }
+    .fade-in { animation: fadeIn 1s ease-in forwards; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .tilt-card {
+      transition: transform 0.3s ease;
+      will-change: transform;
+    }
+    .tilt-card:hover {
+      transform: perspective(1000px) rotateX(5deg) rotateY(5deg);
+    }
+    body {
+      background: radial-gradient(circle at top left, #e0d4ff, #b6e0fe);
+      overflow-x: hidden;
+    }
+    #particles {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: -1; pointer-events: none;
+    }
+    /* Stars */
+    .star { position: absolute; background: rgba(255,255,255,0.8); border-radius:50%; animation:twinkle 1.5s infinite alternate; }
+    @keyframes twinkle { 0%{transform:scale(1);opacity:.8}100%{transform:scale(1.5);opacity:.2} }
+
+    /* Core UI */
+    .story-feed { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:1.5rem; }
+    .story-card {
+      background:#fff; border:1px solid #e1e1e1; border-radius:10px;
+      padding:1.25rem; box-shadow:0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    /* Reactions */
+    .reactions { display:flex; gap:1rem; margin-top:.5rem; }
+    .reaction-btn {
+      background:none; border:none; color:#6a0dad; cursor:pointer; font-size:16px;
+    }
+    .reaction-btn:hover { color:#9b4de7; }
+
+    /* Comments */
+    .comment-section {
+      margin-top:1rem; padding-top:1rem; border-top:1px solid #e1e1e1;
+    }
+    .comment-input {
+      width:100%; padding:.5rem; border:1px solid #d1d5db; border-radius:8px;
+      margin-bottom:.5rem;
+    }
+    .post-comment-btn {
+      background:#6a0dad; color:#fff; padding:.5rem 1rem; border:none; border-radius:8px;
+      cursor:pointer;
+    }
+    .post-comment-btn:hover { background:#9b4de7; }
+    .comments-list .comment {
+      margin-top:.5rem; padding:.5rem; background:#f5f5f5; border-radius:6px; font-size:.9rem;
+    }
+
+    /* Daily Prompt */
+    .daily-prompt {
+      background:#fff; padding:1.5rem; border-radius:10px;
+      box-shadow:0 4px 10px rgba(0,0,0,0.1); text-align:center; margin-top:2rem;
+    }
+    .daily-prompt h3 { font-size:1.5rem; margin-bottom:1rem; }
+    .daily-prompt button {
+      background:#6a0dad; color:#fff; padding:.5rem 1rem; border:none; border-radius:8px;
+      cursor:pointer; margin-top:1rem;
+    }
+    .daily-prompt button:hover { background:#9b4de7; }
+  </style>
+</head>
+
+<body class="min-h-screen px-4 py-6 font-sans">
+  <canvas id="particles"></canvas>
+  <div class="max-w-3xl mx-auto">
+
+    <h1 class="text-4xl font-bold text-center mb-4 fade-in">
+      World of <span class="text-purple-600">Inspire</span>
+    </h1>
+    <p class="text-center text-gray-700 mb-6 fade-in">
+      Share real stories that inspired you or changed your life ✨💫
+    </p>
+
+    <!-- Submission Form -->
+    <div class="bg-white rounded-xl shadow-md p-6 mb-8 fade-in">
+      <h2 class="text-xl font-semibold mb-4">Submit Your Story</h2>
+      <form id="ideaForm" class="space-y-4">
+        <input type="text" id="name" placeholder="Your Name (optional)"
+               class="w-full border rounded-md px-3 py-2" />
+        <input type="text" id="title" placeholder="Story Title" required
+               class="w-full border rounded-md px-3 py-2" />
+        <textarea id="description" placeholder="Share what happened..."
+                  required class="w-full border rounded-md px-3 py-2"></textarea>
+        <button type="submit"
+                class="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700">
+          Share Story
+        </button>
+      </form>
+    </div>
+
+    <!-- Inspirational Stories -->
+    <div class="bg-white rounded-xl shadow-md p-6 fade-in">
+      <h2 class="text-xl font-semibold mb-4">Inspirational Stories</h2>
+      <div class="story-feed" id="storyFeed">
+        <!-- Pre-loaded stories -->
+        <div class="story-card tilt-card floating-card">
+          <h3 class="text-xl font-semibold mb-2">A Leap of Faith</h3>
+          <p class="text-gray-700 mb-4">
+            I left my corporate job to follow my dream of painting—today I exhibit in galleries!
+          </p>
+          <div class="reactions">
+            <button class="reaction-btn" onclick="likeStory(this)">
+              ❤️ <span class="like-count">12</span>
+            </button>
+            <button class="reaction-btn">
+              💬 <span class="comment-count">3</span>
+            </button>
+          </div>
+          <div class="comment-section">
+            <input class="comment-input" placeholder="Add a comment…" />
+            <button class="post-comment-btn" onclick="postComment(this)">
+              Post Comment
+            </button>
+            <div class="comments-list">
+              <div class="comment">So inspiring! 🌟</div>
+              <div class="comment">Wow, congratulations on your exhibit.</div>
+              <div class="comment">You give me hope to chase my dreams.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="story-card tilt-card floating-card">
+          <h3 class="text-xl font-semibold mb-2">Overcoming Fear</h3>
+          <p class="text-gray-700 mb-4">
+            I was terrified of public speaking—now I host workshops for hundreds.
+          </p>
+          <div class="reactions">
+            <button class="reaction-btn" onclick="likeStory(this)">
+              ❤️ <span class="like-count">8</span>
+            </button>
+            <button class="reaction-btn">
+              💬 <span class="comment-count">2</span>
+            </button>
+          </div>
+          <div class="comment-section">
+            <input class="comment-input" placeholder="Add a comment…" />
+            <button class="post-comment-btn" onclick="postComment(this)">
+              Post Comment
+            </button>
+            <div class="comments-list">
+              <div class="comment">That’s amazing progress!</div>
+              <div class="comment">I used to fear it too—thank you for sharing.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="story-card tilt-card floating-card">
+          <h3 class="text-xl font-semibold mb-2">A New Beginning</h3>
+          <p class="text-gray-700 mb-4">
+            After bankruptcy, I started my own bakery—now it’s thriving and beloved.
+          </p>
+          <div class="reactions">
+            <button class="reaction-btn" onclick="likeStory(this)">
+              ❤️ <span class="like-count">15</span>
+            </button>
+            <button class="reaction-btn">
+              💬 <span class="comment-count">5</span>
+            </button>
+          </div>
+          <div class="comment-section">
+            <input class="comment-input" placeholder="Add a comment…" />
+            <button class="post-comment-btn" onclick="postComment(this)">
+              Post Comment
+            </button>
+            <div class="comments-list">
+              <div class="comment">Your bakery sounds wonderful!</div>
+              <div class="comment">So happy for your success.</div>
+              <div class="comment">You’re an inspiration.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Daily Prompt -->
+    <div class="daily-prompt fade-in">
+      <h3>Daily Prompt</h3>
+      <p id="dailyPrompt">"What moment changed your life?"</p>
+      <button onclick="refreshPrompt()">Next Prompt</button>
+    </div>
+
+    <!-- Floating Illustration -->
+    <div class="flex justify-center mt-8 fade-in">
+      <img src="IMAGES/image-from-rawpixel-id-16399767-png.png" alt="Floating Inspire Illustration"
+           class="floating rounded-lg shadow-lg" />
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center mt-12 text-sm text-gray-600 fade-in">
+      <p>Made with <span class="text-pink-500">❤️</span> by <span class="text-purple-600">Team Imagine & Inspire</span></p>
+    </footer>
+
+  </div>
+
+  <script>
+    // Starry background particles
+    const canvas = document.getElementById('particles'),
+          ctx    = canvas.getContext('2d'),
+          stars  = [],
+          num    = 100;
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+    for (let i=0; i<num; i++){
+      stars.push({
+        x: Math.random()*canvas.width,
+        y: Math.random()*canvas.height,
+        r: Math.random()*1.5+0.5,
+        dx: (Math.random()-0.5)*0.2,
+        dy: (Math.random()-0.5)*0.2
+      });
+    }
+    function draw(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      stars.forEach(s=>{
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0,Math.PI*2);
+        ctx.fillStyle='rgba(255,255,255,0.8)';
+        ctx.fill();
+        s.x += s.dx; s.y += s.dy;
+        if (s.x<0||s.x>canvas.width) s.dx*=-1;
+        if (s.y<0||s.y>canvas.height) s.dy*=-1;
+      });
+      requestAnimationFrame(draw);
+    }
+    draw();
+
+    // Add new story dynamically
+    document.getElementById('ideaForm')
+      .addEventListener('submit', e=>{
+        e.preventDefault();
+        const title = document.getElementById('title').value,
+              desc  = document.getElementById('description').value;
+        const card = document.createElement('div');
+        card.className = 'story-card tilt-card floating-card';
+        card.innerHTML = `
+          <h3 class="text-xl font-semibold mb-2">${title}</h3>
+          <p class="text-gray-700 mb-4">${desc}</p>
+          <div class="reactions">
+            <button class="reaction-btn" onclick="likeStory(this)">
+              ❤️ <span class="like-count">0</span>
+            </button>
+            <button class="reaction-btn">
+              💬 <span class="comment-count">0</span>
+            </button>
+          </div>
+          <div class="comment-section">
+            <input class="comment-input" placeholder="Add a comment…" />
+            <button class="post-comment-btn" onclick="postComment(this)">
+              Post Comment
+            </button>
+            <div class="comments-list"></div>
+          </div>`;
+        document.getElementById('storyFeed').prepend(card);
+        e.target.reset();
+      });
+
+    // Likes
+    function likeStory(btn){
+      const span = btn.querySelector('.like-count');
+      span.textContent = +span.textContent + 1;
+    }
+
+    // Comments
+    function postComment(btn){
+      const section = btn.closest('.comment-section'),
+            input   = section.querySelector('.comment-input'),
+            list    = section.querySelector('.comments-list');
+      if(!input.value) return;
+      const div = document.createElement('div');
+      div.className = 'comment';
+      div.textContent = input.value;
+      list.append(div);
+      // increment comment-count badge
+      const cc = section.previousElementSibling.querySelector('.comment-count');
+      if(cc) cc.textContent = +cc.textContent + 1;
+      input.value = '';
+    }
+
+    // Daily Prompt
+    const prompts = [
+      "What moment changed your life?",
+      "What is your greatest achievement?",
+      "Describe your ideal future.",
+      "What’s one thing you wish you knew earlier?",
+      "What inspires you the most?"
+    ];
+    function refreshPrompt(){
+      document.getElementById('dailyPrompt')
+        .textContent = prompts[Math.floor(Math.random()*prompts.length)];
+    }
+  </script>
+</body>
+
+</html>
